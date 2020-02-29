@@ -1,0 +1,131 @@
+import java.io.*;
+
+terminal  PLUS, MINUS, TIMES, DIVIDE, LPAREN, RPAREN, QUOTE, IDENTIFIER,
+                    IF, THEN, ELSE, WRITE, READ, RETURN, BEGIN, END, MAIN, STRING,
+                    INT, REAL, SEMI, COMMA, CEQUAL, EEQUAL, NEQUAL, NUMBER;
+
+non terminal Integer Program;
+
+non terminal MethodDecl, Type, FormalParams, FormalParam, Block,
+            Statement, Statements, LocalVarDecl, AssignStmt, ReturnStmt, IfStmt, WriteStmt,
+            ReadStmt, Expression, MultiplicativeExpr, PrimaryExpr, BoolExpression,
+            ActualParams, MATCHEDSTMT, UNMATCHEDSTMT, CallParam, CallParamList,MethodCall;
+
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence left ELSE;
+
+
+Program     ::= MethodDecl {: RESULT = 1; :}
+            | MethodDecl Program:e {: RESULT = e+1; :}
+            ;
+
+MethodDecl  ::= Type MAIN IDENTIFIER LPAREN FormalParams RPAREN Block
+            | Type IDENTIFIER LPAREN FormalParams RPAREN Block
+            ;
+
+FormalParams    ::= 
+                | FormalParam
+                | FormalParam COMMA FormalParams
+                ;
+
+FormalParam     ::= Type IDENTIFIER
+                ;
+
+Type        ::= INT
+            | REAL
+            | STRING
+            ;
+
+
+
+Block       ::= BEGIN Statements END
+            ;
+
+Statements  ::= Statement
+            | Statement Statements
+            ;
+
+
+Statement   ::= Block
+            | LocalVarDecl
+            | AssignStmt
+            | ReturnStmt
+            | IfStmt
+            | WriteStmt
+            | ReadStmt
+            ;
+
+
+LocalVarDecl    ::= Type IDENTIFIER SEMI
+                ;
+
+
+AssignStmt      ::= IDENTIFIER CEQUAL Expression SEMI
+                ;
+
+
+ReturnStmt      ::= RETURN Expression SEMI
+                ;
+
+
+IfStmt      ::= IF LPAREN BoolExpression RPAREN Statement
+            | IF LPAREN BoolExpression RPAREN Statement ELSE Statement
+            ;
+
+
+WriteStmt   ::= WRITE LPAREN Expression COMMA QUOTE RPAREN SEMI
+            ;
+
+ReadStmt    ::= READ LPAREN IDENTIFIER COMMA QUOTE RPAREN SEMI
+            ;
+
+
+
+Expression      ::= MultiplicativeExpr
+                | MultiplicativeExpr PLUS Expression
+                | MultiplicativeExpr MINUS Expression
+                ;
+
+MultiplicativeExpr     ::= PrimaryExpr
+                        | PrimaryExpr TIMES MultiplicativeExpr
+                        | PrimaryExpr DIVIDE MultiplicativeExpr
+                        ;
+
+PrimaryExpr     ::= NUMBER
+                | IDENTIFIER
+                | LPAREN Expression RPAREN
+                | IDENTIFIER LPAREN ActualParams RPAREN
+                | IDENTIFIER LPAREN RPAREN
+                ;
+
+BoolExpression      ::= Expression EEQUAL Expression
+                    | Expression NEQUAL Expression
+                    ;
+
+ActualParams    ::= Expression
+                | Expression COMMA ActualParams
+                ;
+
+CallParamList   ::= CallParamList COMMA CallParam
+                | CallParam
+                ;
+
+CallParam       ::= PrimaryExpr
+                | QUOTE
+                ;
+
+MethodCall      ::= IDENTIFIER LPAREN CallParamList RPAREN
+                ;
+
+MATCHEDSTMT     ::= Block
+                | LocalVarDecl
+                | AssignStmt
+                | ReturnStmt
+                | WriteStmt
+                | ReadStmt
+                | IF BoolExpression THEN MATCHEDSTMT ELSE MATCHEDSTMT
+                ;
+
+UNMATCHEDSTMT   ::= IF BoolExpression THEN MATCHEDSTMT ELSE UNMATCHEDSTMT
+                ;
